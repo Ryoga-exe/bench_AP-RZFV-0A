@@ -125,6 +125,12 @@ _start:
   la  tp, _end + 63
   and tp, tp, -64
 
+#ifdef ENABLE_CACHE
+  # Andes AX45MP Specific Settings
+  li      t0, 3           # Bit 0: I-Cache Enable, Bit 1: D-Cache Enable
+  csrs    0x7ca, t0       # Enable L1 Cache
+#endif
+
   # get core id
   csrr a0, mhartid
   # for now, assume only 1 core
