@@ -1,5 +1,7 @@
 // Copyright (c) 2017, Christopher Celio
 // Licensed under BSD 3-Clause License
+//
+// Original file: syscalls.c
 // 
 // =====================================
 // Modified to support AP-RZFV-0A board
@@ -14,8 +16,6 @@
 #include <sys/signal.h>
 #include "util.h"
 #include "uart.h"
-
-#define SYS_write 64
 
 #undef strcmp
 
