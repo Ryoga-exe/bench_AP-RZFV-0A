@@ -13,6 +13,7 @@
 #include <limits.h>
 #include <sys/signal.h>
 #include "util.h"
+#include "uart.h"
 
 #define SYS_write 64
 
@@ -22,24 +23,6 @@ extern int ee_printf(const char *fmt, ...);
 
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
-
-static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t arg2)
-{
-  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
-  magic_mem[0] = which;
-  magic_mem[1] = arg0;
-  magic_mem[2] = arg1;
-  magic_mem[3] = arg2;
-  __sync_synchronize();
-
-  tohost = (uintptr_t)magic_mem;
-  while (fromhost == 0)
-    ;
-  fromhost = 0;
-
-  __sync_synchronize();
-  return magic_mem[0];
-}
 
 #define NUM_COUNTERS 2
 static uintptr_t counters[NUM_COUNTERS];
@@ -84,7 +67,12 @@ void abort()
 
 void printstr(const char* s)
 {
-  syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
+  while (*s) {
+    if (*s == '\n') {
+      putchar('\r');
+    }
+    putchar(*s++);
+  }
 }
 
 void __attribute__((weak)) thread_entry(int cid, int nc)
@@ -131,23 +119,21 @@ void _init(int cid, int nc)
 
 int putchar(int ch)
 {
-  static __thread char buf[64] __attribute__((aligned(64)));
-  static __thread int buflen = 0;
-
-  buf[buflen++] = ch;
-
-  if (ch == '\n' || buflen == sizeof(buf))
-  {
-    syscall(SYS_write, 1, (uintptr_t)buf, buflen);
-    buflen = 0;
-  }
-
+  while (!(0x60U & *((volatile uint16_t *)SCIF0_FSR)))
+    ;
+  *((volatile unsigned char *)SCIF0_FTDR) = ch;
+  *((volatile uint16_t *)SCIF0_FSR) &= ~0x60U; /* TEND,TDFE clear */
   return 0;
 }
 
 int puts(const char* s)
 {
-  syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
+  while (*s) {
+    if (*s == '\n') {
+      putchar('\r');
+    }
+    putchar(*s++);
+  }
   return 0; // incorrect return value, but who cares, anyway?
 }
 

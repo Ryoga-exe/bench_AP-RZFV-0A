@@ -60,7 +60,7 @@ CFLAGS = $(PORT_CFLAGS) -I$(PORT_DIR) -I. -DFLAGS_STR=\"$(FLAGS_STR)\"
 LFLAGS_END +=
 # Flag: PORT_SRCS
 # Port specific source files can be added here
-PORT_SRCS = $(PORT_DIR)/core_portme.c $(PORT_DIR)/syscalls.c $(PORT_DIR)/crt.S $(PORT_DIR)/ee_printf.c barebones/cvt.c
+PORT_SRCS = $(PORT_DIR)/core_portme.c $(PORT_DIR)/entry.c $(PORT_DIR)/crt.S $(PORT_DIR)/ee_printf.c barebones/cvt.c
 # Flag: LOAD
 #	Define this flag if you need to load to a target, as in a cross compile environment.
 
