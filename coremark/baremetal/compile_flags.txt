@@ -1,0 +1,3 @@
+-DITERATIONS
+-I../coremark
+-I.
